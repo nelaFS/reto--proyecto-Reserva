@@ -1,0 +1,15 @@
+{
+  "name": "reservadb",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace frontend",
+    "check": "npm run check --workspace frontend",
+    "typecheck": "npm run typecheck --workspace backend",
+    "test": "npm run test --workspace backend"
+  }
+}

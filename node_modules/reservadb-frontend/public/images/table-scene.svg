@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 900" role="img" aria-labelledby="title desc">
+  <title id="title">Mesa preparada para una cena</title>
+  <desc id="desc">Ilustracion editorial de platos, copa, cubiertos y ramas de olivo.</desc>
+  <defs>
+    <radialGradient id="plate" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#fff9e9"/><stop offset=".72" stop-color="#e5d8d1"/><stop offset="1" stop-color="#bba9aa"/></radialGradient>
+    <linearGradient id="glass" x1="0" x2="1"><stop stop-color="#fff4d8" stop-opacity=".5"/><stop offset=".45" stop-color="#fff" stop-opacity=".13"/><stop offset="1" stop-color="#9f8092" stop-opacity=".6"/></linearGradient>
+    <filter id="shadow"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="760" height="900" rx="28" fill="#4c1f41"/>
+  <path d="M0 180c120-70 169-49 270 2S483 280 760 150v170c-188 75-387 60-519-12S86 284 0 350Z" fill="#e98b62" opacity=".55"/>
+  <ellipse cx="385" cy="500" rx="292" ry="105" fill="#25101f" opacity=".42" filter="url(#shadow)"/>
+  <ellipse cx="380" cy="458" rx="254" ry="255" fill="url(#plate)" stroke="#fff4d8" stroke-opacity=".7" stroke-width="4"/>
+  <ellipse cx="380" cy="452" rx="192" ry="194" fill="#f8f0e1" stroke="#d3c3bb" stroke-width="4"/>
+  <ellipse cx="380" cy="451" rx="141" ry="142" fill="url(#plate)" stroke="#c9b6b1" stroke-width="3"/>
+  <ellipse cx="344" cy="400" rx="90" ry="44" fill="#fff9eb" opacity=".55"/>
+  <g stroke="#fff4d8" stroke-width="9" stroke-linecap="round" opacity=".9">
+    <path d="M117 286v385M96 286v104M117 286v104M138 286v104M96 390c0 30 42 30 42 0"/>
+    <path d="M639 294v377M620 294c0 70 38 70 38 0M620 294h38"/>
+  </g>
+  <g fill="url(#glass)" stroke="#fff4d8" stroke-opacity=".66" stroke-width="4">
+    <path d="M527 160h132l-15 133c-7 46-102 46-109 0Z"/>
+    <path d="M592 293v139M552 432h81"/>
+    <ellipse cx="593" cy="160" rx="66" ry="18"/>
+  </g>
+  <g stroke="#9ba56b" stroke-width="5" stroke-linecap="round">
+    <path d="M76 747c135-36 193-153 259-242M681 756c-107-49-166-126-202-222"/>
+  </g>
+  <g fill="#9ba56b">
+    <ellipse cx="120" cy="721" rx="13" ry="31" transform="rotate(-46 120 721)"/><ellipse cx="154" cy="696" rx="13" ry="31" transform="rotate(40 154 696)"/>
+    <ellipse cx="193" cy="650" rx="13" ry="31" transform="rotate(-50 193 650)"/><ellipse cx="224" cy="615" rx="13" ry="31" transform="rotate(38 224 615)"/>
+    <ellipse cx="633" cy="732" rx="13" ry="31" transform="rotate(44 633 732)"/><ellipse cx="602" cy="698" rx="13" ry="31" transform="rotate(-38 602 698)"/>
+    <ellipse cx="572" cy="661" rx="13" ry="31" transform="rotate(44 572 661)"/><ellipse cx="548" cy="614" rx="13" ry="31" transform="rotate(-35 548 614)"/>
+  </g>
+</svg>

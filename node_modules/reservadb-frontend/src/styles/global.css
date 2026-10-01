@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "DM Sans", Arial, sans-serif;
+  --color-plum-950: #25101f;
+  --color-plum-900: #39172f;
+  --color-plum-800: #4c1f41;
+  --color-plum-700: #662751;
+  --color-cream: #fff4d8;
+  --color-muted-cream: #dbc8c8;
+  --color-coral: #e98b62;
+  --color-sage: #9ba56b;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: var(--font-sans);
+  background: #25101f;
+  color: #fff4d8;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(233, 139, 98, 0.14), transparent 26rem),
+    radial-gradient(circle at 88% 82%, rgba(102, 39, 81, 0.48), transparent 32rem),
+    #25101f;
+}
+
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #e98b62;
+  color: #25101f;
+}
+
+.grain {
+  position: relative;
+}
+
+.grain::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  content: "";
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.display-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 0.82;
+}
+
+.eyebrow {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.38em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid #e98b62;
+  outline-offset: 4px;
+}
+
+.field {
+  width: 100%;
+  border: 1px solid rgba(255, 244, 216, 0.22);
+  border-radius: 0.75rem;
+  background: rgba(37, 16, 31, 0.45);
+  color: #fff4d8;
+  padding: 0.8rem 0.9rem;
+  outline: none;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.field:focus {
+  border-color: #e98b62;
+  background: rgba(37, 16, 31, 0.7);
+  box-shadow: 0 0 0 3px rgba(233, 139, 98, 0.15);
+}
+
+.field::placeholder {
+  color: rgba(219, 200, 200, 0.62);
+}
+
+.field option {
+  background: #39172f;
+}
+
+.button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border-radius: 999px;
+  background: #fff4d8;
+  color: #39172f;
+  padding: 0.85rem 1.2rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.button-primary:hover {
+  background: #e98b62;
+  box-shadow: 0 10px 24px rgba(233, 139, 98, 0.18);
+  transform: translateY(-2px);
+}
+
+.button-primary:disabled {
+  cursor: wait;
+  opacity: 0.6;
+  transform: none;
+}
+
+.button-quiet {
+  border: 1px solid rgba(255, 244, 216, 0.22);
+  border-radius: 999px;
+  color: #fff4d8;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+.button-quiet:hover {
+  border-color: #e98b62;
+  background: rgba(233, 139, 98, 0.1);
+  color: #e98b62;
+}

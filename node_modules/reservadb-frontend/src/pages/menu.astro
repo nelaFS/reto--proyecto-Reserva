@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+---
+<BaseLayout title="Menu">
+  <main class="grain min-h-screen"><SiteHeader /><section class="mx-auto max-w-7xl px-6 py-12 md:px-10 md:py-20"><p class="eyebrow text-coral">Cocina de Casa Moxos</p><h1 class="mt-4 font-display text-7xl text-cream">Menú</h1><div id="menu-list" class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3"><p class="text-muted-cream">Cargando menú...</p></div></section></main>
+</BaseLayout>
+<script>
+  import { getPublicContent } from '../lib/api/public'
+  const list = document.querySelector('#menu-list')
+  void getPublicContent('menu').then(({ data }) => { if (!list) return; list.innerHTML = data.map((item) => `<article class="overflow-hidden rounded-2xl border border-cream/15 bg-plum-900/60"><div class="h-44 bg-plum-800"><img src="${String(item.imagen)}" alt="${String(item.nombre)}" class="h-full w-full object-cover" /></div><div class="p-6"><p class="eyebrow text-coral">${String(item.categoria)}</p><h2 class="mt-3 font-display text-4xl text-cream">${String(item.nombre)}</h2><p class="mt-3 text-sm text-muted-cream">${String(item.descripcion)}</p><p class="mt-6 font-display text-2xl text-coral">Bs ${String(item.precio)}</p></div></article>`).join('') }).catch(() => { if (list) list.innerHTML = '<p class="text-muted-cream">El menú estará disponible muy pronto.</p>' })
+</script>

@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import Hero from '../components/landing/Hero.astro'
+import Experience from '../components/landing/Experience.astro'
+---
+<BaseLayout title="Casa Moxos">
+  <main class="grain min-h-screen overflow-hidden">
+    <SiteHeader />
+    <Hero />
+    <section id="menu" class="border-t border-cream/15 px-6 py-20 md:px-10 md:py-28">
+      <div class="mx-auto max-w-7xl">
+        <div class="flex flex-wrap items-end justify-between gap-5">
+          <div><p class="eyebrow text-coral">Sabores de la tierra</p><h2 class="mt-4 font-display text-6xl text-cream">Nuestro menú</h2></div>
+          <a href="/menu" class="button-quiet">Ver todo el menú ↗</a>
+        </div>
+        <div id="home-menu" class="mt-10 grid gap-5 md:grid-cols-3">
+          <article class="rounded-2xl border border-cream/15 bg-plum-900/60 p-6"><p class="eyebrow text-coral">Tradicional</p><h3 class="mt-4 font-display text-3xl text-cream">Majadito Cruceño</h3><p class="mt-3 text-sm text-muted-cream">Arroz con charque, huevo y platano maduro.</p><p class="mt-6 font-display text-2xl text-coral">Bs 42</p></article>
+          <article class="rounded-2xl border border-cream/15 bg-plum-900/60 p-6"><p class="eyebrow text-coral">Tradicional</p><h3 class="mt-4 font-display text-3xl text-cream">Silpancho Oriental</h3><p class="mt-3 text-sm text-muted-cream">Carne apanada, arroz, papa y ensalada fresca.</p><p class="mt-6 font-display text-2xl text-coral">Bs 48</p></article>
+          <article class="rounded-2xl border border-cream/15 bg-plum-900/60 p-6"><p class="eyebrow text-coral">Para compartir</p><h3 class="mt-4 font-display text-3xl text-cream">Pique Macho Sabino</h3><p class="mt-3 text-sm text-muted-cream">Carne, chorizo, papas y la salsa de la casa.</p><p class="mt-6 font-display text-2xl text-coral">Bs 58</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="eventos" class="bg-plum-900/35 px-6 py-20 md:px-10 md:py-28">
+      <div class="mx-auto grid max-w-7xl gap-10 md:grid-cols-[0.7fr_1.3fr]">
+        <div><p class="eyebrow text-coral">Agenda de la casa</p><h2 class="mt-4 font-display text-6xl leading-[0.9] text-cream">Siempre hay<br /><em class="text-coral">algo que celebrar.</em></h2></div>
+        <div id="home-events" class="grid gap-4 sm:grid-cols-2"><article class="rounded-2xl border border-cream/15 p-6"><p class="eyebrow text-coral">09 OCT · 20:30</p><h3 class="mt-4 font-display text-3xl text-cream">Viernes de Jazz Tropical</h3><p class="mt-3 text-sm text-muted-cream">Musica en vivo y cocteles de autor.</p></article><article class="rounded-2xl border border-cream/15 p-6"><p class="eyebrow text-coral">17 OCT · 19:00</p><h3 class="mt-4 font-display text-3xl text-cream">Noche de Sabores Cruceños</h3><p class="mt-3 text-sm text-muted-cream">Menu especial de temporada.</p></article></div>
+      </div>
+    </section>
+    <section id="promociones" class="px-6 py-20 md:px-10 md:py-28">
+      <div class="mx-auto max-w-7xl rounded-[2rem] border border-coral/35 bg-coral/10 p-8 md:p-12"><div class="flex flex-col justify-between gap-8 md:flex-row md:items-center"><div><p class="eyebrow text-coral">Esta semana en Casa Moxos</p><h2 class="mt-4 font-display text-5xl text-cream">Momentos para compartir.</h2><p class="mt-4 max-w-xl text-muted-cream">Descubre nuestras promociones y arma tu próxima noche en Santa Cruz.</p></div><a href="/reservar" class="button-primary">Reservar mesa ↗</a></div></div>
+    </section>
+    <Experience />
+    <footer class="border-t border-cream/15 px-6 py-8 md:px-10">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 text-xs text-muted-cream sm:flex-row sm:items-center sm:justify-between">
+        <p class="eyebrow text-cream">Casa Moxos</p>
+        <p>Reservas: <a class="text-cream hover:text-coral" href="tel:+59172123456">721 234 56</a></p>
+        <p>Equipetrol, Santa Cruz de la Sierra</p>
+      </div>
+    </footer>
+  </main>
+</BaseLayout>
+<script>
+  import { getPublicContent } from '../lib/api/public'
+  const menu = document.querySelector('#home-menu')
+  const events = document.querySelector('#home-events')
+  const card = (title: string, description: string, meta: string) => `<article class="rounded-2xl border border-cream/15 bg-plum-900/60 p-6"><p class="eyebrow text-coral">${meta}</p><h3 class="mt-4 font-display text-3xl text-cream">${title}</h3><p class="mt-3 text-sm text-muted-cream">${description}</p></article>`
+  void Promise.all([getPublicContent('menu'), getPublicContent('eventos')]).then(([menuData, eventData]) => {
+    if (menu && menuData.data.length) menu.innerHTML = menuData.data.slice(0, 3).map((item) => card(String(item.nombre), String(item.descripcion), String(item.categoria))).join('')
+    if (events && eventData.data.length) events.innerHTML = eventData.data.slice(0, 2).map((item) => card(String(item.nombre), String(item.descripcion), `${String(item.fecha)} · ${String(item.hora).slice(0, 5)}`)).join('')
+  }).catch(() => {})
+</script>

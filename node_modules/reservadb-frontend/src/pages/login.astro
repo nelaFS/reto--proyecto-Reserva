@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+---
+<BaseLayout title="Acceso de administrador">
+  <main class="grain min-h-screen">
+    <SiteHeader compact />
+    <section class="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-7xl items-center justify-center px-6 py-16 md:px-10">
+      <div class="grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-cream/15 bg-plum-900/70 shadow-2xl shadow-plum-950/30 lg:grid-cols-[0.82fr_1fr]">
+        <div class="relative hidden overflow-hidden bg-plum-800 p-10 lg:block">
+          <img src="/images/table-scene.svg" alt="Mesa de cena" class="absolute inset-0 h-full w-full object-cover opacity-60" />
+          <div class="absolute inset-0 bg-gradient-to-t from-plum-950 via-plum-900/20 to-transparent"></div>
+          <div class="relative flex h-full flex-col justify-end">
+            <p class="eyebrow text-coral">Back office</p>
+            <h1 class="mt-4 font-display text-6xl leading-[0.86] text-cream">La mesa<br /><em>te espera.</em></h1>
+          </div>
+        </div>
+        <div class="p-7 sm:p-12 lg:p-16">
+          <p class="eyebrow text-coral">Administracion</p>
+          <h1 class="mt-5 font-display text-5xl leading-none text-cream">Bienvenido<br />de nuevo.</h1>
+          <p class="mt-5 max-w-sm text-sm leading-relaxed text-muted-cream">Accede para organizar la sala y cuidar cada reserva.</p>
+          <form id="login-form" class="mt-10 space-y-5" novalidate>
+            <div>
+              <label for="usuario" class="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-cream">Usuario</label>
+              <input id="usuario" name="usuario" class="field" autocomplete="username" placeholder="sabinofc" required />
+              <p data-error-for="usuario" class="mt-2 min-h-5 text-xs text-coral"></p>
+            </div>
+            <div>
+              <label for="contrasena" class="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-cream">Contrasena</label>
+              <input id="contrasena" name="contrasena" type="password" class="field" autocomplete="current-password" placeholder="••••••••" required />
+              <p data-error-for="contrasena" class="mt-2 min-h-5 text-xs text-coral"></p>
+            </div>
+            <p id="login-error" class="hidden rounded-lg border border-coral/30 bg-coral/10 p-3 text-sm text-coral"></p>
+            <button type="submit" class="button-primary w-full" data-submit>Entrar a la sala <span aria-hidden="true">↗</span></button>
+          </form>
+          <a href="/" class="focus-ring mt-8 inline-block text-xs font-bold uppercase tracking-[0.14em] text-muted-cream hover:text-cream">← Volver al inicio</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+<script>
+  import { login } from '../lib/api/auth'
+  import { saveSession } from '../lib/session'
+  import { loginFormSchema } from '../lib/schemas'
+
+  const form = document.querySelector<HTMLFormElement>('#login-form')
+  const submit = document.querySelector<HTMLButtonElement>('[data-submit]')
+  const formError = document.querySelector<HTMLElement>('#login-error')
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    document.querySelectorAll('[data-error-for]').forEach((element) => { element.textContent = '' })
+    formError?.classList.add('hidden')
+
+    const values = Object.fromEntries(new FormData(form).entries())
+    const parsed = loginFormSchema.safeParse(values)
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0]
+        if (typeof field !== 'string') continue
+        const errorElement = document.querySelector<HTMLElement>(`[data-error-for="${field}"]`)
+        if (errorElement) errorElement.textContent = issue.message
+      }
+      return
+    }
+
+    if (submit) {
+      submit.disabled = true
+      submit.textContent = 'Comprobando...'
+    }
+
+    try {
+      const response = await login(parsed.data.usuario, parsed.data.contrasena)
+      saveSession(response.data.accessToken, parsed.data.usuario)
+      window.location.href = '/reservas'
+    } catch (error) {
+      if (formError) {
+        formError.textContent = error instanceof Error ? error.message : 'No se pudo iniciar sesion.'
+        formError.classList.remove('hidden')
+      }
+    } finally {
+      if (submit) {
+        submit.disabled = false
+        submit.innerHTML = 'Entrar a la sala <span aria-hidden="true">↗</span>'
+      }
+    }
+  })
+</script>

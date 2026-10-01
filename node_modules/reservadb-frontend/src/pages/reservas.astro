@@ -1,0 +1,239 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import ReservationForm from '../components/reservas/ReservationForm.astro'
+import ReservationTable from '../components/reservas/ReservationTable.astro'
+---
+<BaseLayout title="Gestion de reservas">
+  <main class="grain min-h-screen">
+    <SiteHeader compact />
+    <section class="mx-auto max-w-7xl px-6 py-12 md:px-10 md:py-16">
+      <div class="mb-12 flex flex-col justify-between gap-5 border-b border-cream/15 pb-10 sm:flex-row sm:items-end">
+        <div>
+          <p class="eyebrow text-coral">Panel de administracion</p>
+          <h1 class="mt-4 font-display text-6xl leading-[0.85] text-cream md:text-8xl">La sala<br /><em class="text-coral">en orden.</em></h1>
+        </div>
+        <p class="max-w-xs text-sm leading-relaxed text-muted-cream">Gestiona cada llegada con calma. Los cambios se reflejan directamente en el libro de reservas.</p>
+      </div>
+      <div class="grid gap-7 xl:grid-cols-[0.78fr_1.42fr]">
+        <ReservationForm />
+        <ReservationTable />
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+<script>
+  import { createReserva, listReservas, updateReserva } from '../lib/api/reservas'
+  import { ApiClientError } from '../lib/api/client'
+  import { clearSession, getAccessToken } from '../lib/session'
+  import { reservaFormSchema } from '../lib/schemas'
+  import type { Reserva } from '../types/api'
+
+  if (!getAccessToken()) {
+    window.location.replace('/login')
+  }
+
+  const reservationForm = document.querySelector<HTMLFormElement>('#reserva-form')
+  const filtersForm = document.querySelector<HTMLFormElement>('#filters-form')
+  const body = document.querySelector<HTMLTableSectionElement>('[data-reservas-body]')
+  const empty = document.querySelector<HTMLElement>('[data-empty]')
+  const total = document.querySelector<HTMLElement>('[data-total]')
+  const pageLabel = document.querySelector<HTMLElement>('[data-page-label]')
+  const previous = document.querySelector<HTMLButtonElement>('[data-page-prev]')
+  const next = document.querySelector<HTMLButtonElement>('[data-page-next]')
+  const formTitle = document.querySelector<HTMLElement>('[data-form-title]')
+  const formSubmit = document.querySelector<HTMLButtonElement>('[data-form-submit]')
+  const formCancel = document.querySelector<HTMLButtonElement>('[data-form-cancel]')
+  const formMessage = document.querySelector<HTMLElement>('[data-form-message]')
+  let page = 1
+  let totalPages = 1
+  let editingId: number | null = null
+
+  function displayDate(value: string): string {
+    const date = new Date(value.replace(' ', 'T'))
+    if (Number.isNaN(date.valueOf())) return value
+    return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date)
+  }
+
+  function setMessage(message: string, kind: 'success' | 'error'): void {
+    if (!formMessage) return
+    formMessage.textContent = message
+    formMessage.className = kind === 'success'
+      ? 'rounded-lg border border-sage/40 bg-sage/10 p-3 text-sm text-sage'
+      : 'rounded-lg border border-coral/30 bg-coral/10 p-3 text-sm text-coral'
+  }
+
+  function clearForm(): void {
+    reservationForm?.reset()
+    const status = document.querySelector<HTMLSelectElement>('#estadoPedido')
+    if (status) status.value = 'Disponible'
+    editingId = null
+    if (formTitle) formTitle.textContent = 'Registrar reserva'
+    if (formSubmit) formSubmit.innerHTML = 'Guardar reserva <span aria-hidden="true">↗</span>'
+    formCancel?.classList.add('hidden')
+    document.querySelectorAll('[data-error-for]').forEach((element) => { element.textContent = '' })
+  }
+
+  function fillForm(reserva: Reserva): void {
+    editingId = reserva.identificador
+    const setValue = (id: string, value: string) => {
+      const field = document.querySelector<HTMLInputElement | HTMLSelectElement>(`#${id}`)
+      if (field) field.value = value
+    }
+    setValue('nombreCliente', reserva.nombreCliente)
+    setValue('numeroCliente', reserva.numeroCliente)
+    setValue('numeroMesa', String(reserva.numeroMesa))
+    setValue('cantidadPersonas', String(reserva.cantidadPersonas))
+    setValue('estadoPedido', reserva.estadoPedido)
+    setValue('fechaReserva', reserva.fechaReserva.replace(' ', 'T').slice(0, 16))
+    if (formTitle) formTitle.textContent = 'Editar reserva'
+    if (formSubmit) formSubmit.innerHTML = 'Guardar cambios <span aria-hidden="true">↗</span>'
+    formCancel?.classList.remove('hidden')
+    document.querySelector('#nombreCliente')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  function renderRows(reservas: Reserva[]): void {
+    if (!body) return
+    body.replaceChildren()
+    for (const reserva of reservas) {
+      const row = document.createElement('tr')
+      row.className = 'text-muted-cream transition hover:bg-cream/[0.03]'
+      const client = document.createElement('td')
+      client.className = 'px-5 py-5 sm:px-7'
+      const name = document.createElement('p')
+      name.className = 'font-bold text-cream'
+      name.textContent = reserva.nombreCliente
+      const phone = document.createElement('p')
+      phone.className = 'mt-1 text-xs text-muted-cream'
+      phone.textContent = reserva.numeroCliente
+      client.append(name, phone)
+      const table = document.createElement('td')
+      table.className = 'px-5 py-5 font-display text-2xl text-cream'
+      table.textContent = String(reserva.numeroMesa).padStart(2, '0')
+      const people = document.createElement('td')
+      people.className = 'px-5 py-5 text-sm'
+      people.textContent = String(reserva.cantidadPersonas)
+      const date = document.createElement('td')
+      date.className = 'px-5 py-5 text-xs'
+      date.textContent = displayDate(reserva.fechaReserva)
+      const status = document.createElement('td')
+      status.className = 'px-5 py-5'
+      const badge = document.createElement('span')
+      badge.className = reserva.estadoPedido === 'Disponible'
+        ? 'rounded-full border border-sage/40 bg-sage/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-sage'
+        : 'rounded-full border border-coral/35 bg-coral/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-coral'
+      badge.textContent = reserva.estadoPedido
+      status.append(badge)
+      const action = document.createElement('td')
+      action.className = 'px-5 py-5'
+      const edit = document.createElement('button')
+      edit.type = 'button'
+      edit.className = 'text-xs font-bold uppercase tracking-[0.1em] text-cream transition hover:text-coral'
+      edit.textContent = 'Editar'
+      edit.addEventListener('click', () => fillForm(reserva))
+      action.append(edit)
+      row.append(client, table, people, date, status, action)
+      body.append(row)
+    }
+    empty?.classList.toggle('hidden', reservas.length > 0)
+  }
+
+  async function loadReservations(): Promise<void> {
+    const filterValues = filtersForm ? Object.fromEntries(new FormData(filtersForm).entries()) : {}
+    const filters = {
+      ...filterValues,
+      numeroMesa: filterValues.numeroMesa ? Number(filterValues.numeroMesa) : undefined,
+      fechaDesde: filterValues.fechaDesde ? `${filterValues.fechaDesde} 00:00:00` : undefined,
+      fechaHasta: filterValues.fechaHasta ? `${filterValues.fechaHasta} 23:59:59` : undefined,
+      page,
+      limit: 20,
+    }
+    const result = await listReservas(filters)
+    totalPages = Math.max(1, result.pagination.totalPages)
+    renderRows(result.data)
+    if (total) total.textContent = `${result.pagination.total} reserva${result.pagination.total === 1 ? '' : 's'}`
+    if (pageLabel) pageLabel.textContent = `Pagina ${result.pagination.page} de ${totalPages}`
+    if (previous) previous.disabled = page <= 1
+    if (next) next.disabled = page >= totalPages
+  }
+
+  filtersForm?.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    page = 1
+    try {
+      await loadReservations()
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'No se pudieron cargar las reservas.', 'error')
+    }
+  })
+
+  previous?.addEventListener('click', async () => {
+    if (page <= 1) return
+    page -= 1
+    await loadReservations()
+  })
+
+  next?.addEventListener('click', async () => {
+    if (page >= totalPages) return
+    page += 1
+    await loadReservations()
+  })
+
+  formCancel?.addEventListener('click', clearForm)
+
+  reservationForm?.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    document.querySelectorAll('[data-error-for]').forEach((element) => { element.textContent = '' })
+    const values = Object.fromEntries(new FormData(reservationForm).entries())
+    const parsed = reservaFormSchema.safeParse(values)
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0]
+        if (typeof field !== 'string') continue
+        const errorElement = document.querySelector<HTMLElement>(`[data-error-for="${field}"]`)
+        if (errorElement) errorElement.textContent = issue.message
+      }
+      return
+    }
+
+    if (formSubmit) {
+      formSubmit.disabled = true
+      formSubmit.textContent = editingId ? 'Guardando...' : 'Registrando...'
+    }
+    const input = {
+      ...parsed.data,
+      numeroMesa: Number(parsed.data.numeroMesa),
+      cantidadPersonas: Number(parsed.data.cantidadPersonas),
+      fechaReserva: parsed.data.fechaReserva.replace('T', ' ') + (parsed.data.fechaReserva.length === 16 ? ':00' : ''),
+    }
+
+    try {
+      if (editingId) {
+        await updateReserva(editingId, input)
+        setMessage('La reserva se actualizo correctamente.', 'success')
+      } else {
+        await createReserva(input)
+        setMessage('La reserva se registro correctamente.', 'success')
+      }
+      clearForm()
+      await loadReservations()
+    } catch (error) {
+      const message = error instanceof ApiClientError ? error.message : 'No se pudo guardar la reserva.'
+      setMessage(message, 'error')
+    } finally {
+      if (formSubmit) {
+        formSubmit.disabled = false
+        formSubmit.innerHTML = editingId ? 'Guardar cambios <span aria-hidden="true">↗</span>' : 'Guardar reserva <span aria-hidden="true">↗</span>'
+      }
+    }
+  })
+
+  void loadReservations().catch((error) => {
+    if (error instanceof ApiClientError && error.status === 401) {
+      clearSession()
+      window.location.replace('/login')
+      return
+    }
+    setMessage(error instanceof Error ? error.message : 'No se pudieron cargar las reservas.', 'error')
+  })
+</script>
